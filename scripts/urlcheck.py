@@ -12,7 +12,8 @@ MAX_WORKERS = 5
 def check_url_status(url):
     try:
         response = requests.head(url, allow_redirects=True, timeout=5)
-        return response.status_code, response.reason, response.url
+        final_url = response.url  # Get the final URL after redirects
+        return response.status_code, response.reason, final_url
     except requests.RequestException as e:
         return None, str(e), None
 
@@ -36,7 +37,8 @@ def process_file(file_path):
                 for url in urls:
                     if is_valid_url(url):
                         status_code, reason, final_url = check_url_status(url)
-                        if status_code and status_code not in {200, 403, 415, 501} and final_url != INTERNAL_404_URL:
+                        # Flag the URL if status code is bad OR if it redirects to the 404 page
+                        if (status_code and status_code not in {200, 403, 415, 501}) or final_url == INTERNAL_404_URL:
                             file_report.append({
                                 'file': file_path,
                                 'line': line_number,
