@@ -12,7 +12,9 @@ MAX_WORKERS = 5
 def check_url_status(url):
     try:
         response = requests.head(url, allow_redirects=True, timeout=5)
-        final_url = response.url  # Get the final URL after redirects
+        final_url = response.url.rstrip('/')
+        if final_url == INTERNAL_404_URL.rstrip('/') or "404" in final_url:
+            return 404, "Redirected to 404", final_url
         return response.status_code, response.reason, final_url
     except requests.RequestException as e:
         return None, str(e), None
