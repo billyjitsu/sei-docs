@@ -29,20 +29,17 @@ jobs:
       - name: Run link checker
         id: run_checker
         run: |
-          output=$(python scripts/urlcheck.py)
-          echo 'checker_output<<EOF' >> $GITHUB_OUTPUT
-          echo "$output" >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          python scripts/urlcheck.py > checker_output.json
+          cat checker_output.json
         env:
           CHECK_PATH: './pages/'
 
       - name: Process results
         id: process_results
         run: |
-          output='${{ steps.run_checker.outputs.checker_output }}'
+          json_output=$(cat checker_output.json)
           echo "Raw output:"
-          echo "$output"
-          json_output=$(echo "$output" | grep -Eo '\{.*\}')
+          echo "$json_output"
           total_issues=$(echo "$json_output" | jq -r '.total_issues')
           echo "TOTAL_ISSUES=$total_issues" >> $GITHUB_ENV
           
